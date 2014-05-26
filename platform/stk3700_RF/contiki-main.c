@@ -289,7 +289,8 @@ main(void)
     rtimer_init();
 #endif
 
-  printf("\r\nSTK3700 Starting (%lX - %lX)\r\n",u32_resetcause, u32_fullresetcause);
+  printf("\e[1;1H\e[2J");
+  printf("\r\nWelcome to STK3700_RF \r\n");
 
  // i2c_init(400);
 
