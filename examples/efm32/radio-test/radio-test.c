@@ -15,7 +15,7 @@
 static struct etimer et_radio;
 
 /*---------------------------------------------------------------------------*/
-PROCESS(hello_world_process, "Radio test process");
+PROCESS(radio_test_process, "Radio test process");
 AUTOSTART_PROCESSES(&radio_test_process);
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(radio_test_process, ev, data)

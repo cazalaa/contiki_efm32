@@ -174,4 +174,6 @@
 #define LEDS_USER2    2
 #define LEDS_USER     LEDS_USER1
 
+#include "platform-init.h"
+
 #endif /* __PLATFORM_CONF_H__ */

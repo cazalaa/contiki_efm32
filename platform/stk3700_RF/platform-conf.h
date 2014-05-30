@@ -271,6 +271,7 @@
 #include "em_usart.h"
 #include "em_gpio.h"
 #include "em_cmu.h"
-#include "stdarg.h"    
+#include "stdarg.h" 
+#include "platform-init.h"   
 
 #endif /* __PLATFORM_CONF_H__ */
