@@ -1,4 +1,9 @@
-
+/**
+ * \file
+ *         platform initialization file
+ * \author
+ *         Jerome Cloute-Cazalaa <Silabs>
+ */
 #include "contiki.h"
 
 #include <stdint.h>

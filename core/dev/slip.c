@@ -90,7 +90,7 @@ static void (* input_callback)(void) = NULL;
 void
 slip_set_input_callback(void (*c)(void))
 {
-  input_callback = c;
+   input_callback = c;
 }
 /*---------------------------------------------------------------------------*/
 /* slip_send: forward (IPv4) packets with {UIP_FW_NETIF(..., slip_send)}
@@ -103,15 +103,17 @@ slip_send(void)
   uint16_t i;
   uint8_t *ptr;
   uint8_t c;
-
-  slip_arch_writeb(SLIP_END);
+  
+  
+  slip_arch_writeb(SLIP_END);         
 
   ptr = &uip_buf[UIP_LLH_LEN];
   for(i = 0; i < uip_len; ++i) {
     if(i == UIP_TCPIP_HLEN) {
       ptr = (uint8_t *)uip_appdata;
     }
-    c = *ptr++;
+    c= uip_buf[i];
+    //c = *ptr++;
     if(c == SLIP_END) {
       slip_arch_writeb(SLIP_ESC);
       c = SLIP_ESC_END;
@@ -119,7 +121,7 @@ slip_send(void)
       slip_arch_writeb(SLIP_ESC);
       c = SLIP_ESC_ESC;
     }
-    slip_arch_writeb(c);
+   slip_arch_writeb(c);
   }
   slip_arch_writeb(SLIP_END);
 
@@ -163,7 +165,8 @@ rxbuf_init(void)
 static uint16_t
 slip_poll_handler(uint8_t *outbuf, uint16_t blen)
 {
-  /* This is a hack and won't work across buffer edge! */
+  
+   /* This is a hack and won't work across buffer edge! */
   if(rxbuf[begin] == 'C') {
     int i;
     if(begin < end && (end - begin) >= 6
@@ -205,8 +208,8 @@ slip_poll_handler(uint8_t *outbuf, uint16_t blen)
     }
   }
 #endif /* SLIP_CONF_ANSWER_MAC_REQUEST */
-
-  /*
+   
+    /*
    * Interrupt can not change begin but may change pkt_end.
    * If pkt_end != begin it will not change again.
    */
@@ -218,7 +221,7 @@ slip_poll_handler(uint8_t *outbuf, uint16_t blen)
       if(len > blen) {
 	len = 0;
       } else {
-	memcpy(outbuf, &rxbuf[begin], len);
+ 	    memcpy(outbuf, &rxbuf[begin], len);
       }
     } else {
       len = (RX_BUFSIZE - begin) + (pkt_end - 0);
@@ -229,7 +232,7 @@ slip_poll_handler(uint8_t *outbuf, uint16_t blen)
 	for(i = begin; i < RX_BUFSIZE; i++) {
 	  *outbuf++ = rxbuf[i];
 	}
-	for(i = 0; i < pkt_end; i++) {
+	for(i = 0; i < pkt_end; i++) {  
 	  *outbuf++ = rxbuf[i];
 	}
       }
@@ -240,10 +243,12 @@ slip_poll_handler(uint8_t *outbuf, uint16_t blen)
     if(state == STATE_TWOPACKETS) {
       pkt_end = end;
       state = STATE_OK;		/* Assume no bytes where lost! */
-      
+    
       /* One more packet is buffered, need to be polled again! */
       process_poll(&slip_process);
+      
     }
+    
     return len;
   }
 
@@ -258,12 +263,15 @@ PROCESS_THREAD(slip_process, ev, data)
 
   while(1) {
     PROCESS_YIELD_UNTIL(ev == PROCESS_EVENT_POLL);
-    
+    int i;
     slip_active = 1;
-
     /* Move packet from rxbuf to buffer provided by uIP. */
     uip_len = slip_poll_handler(&uip_buf[UIP_LLH_LEN],
 				UIP_BUFSIZE - UIP_LLH_LEN);
+   	for(i = 0; i < uip_len; i++) {            // ajout car buffer mal passe
+	  uip_buf[i] = rxbuf[i];
+	}
+
 #if !UIP_CONF_IPV6
     if(uip_len == 4 && strncmp((char*)&uip_buf[UIP_LLH_LEN], "?IPA", 4) == 0) {
       char buf[8];
@@ -303,6 +311,7 @@ PROCESS_THREAD(slip_process, ev, data)
       if(input_callback) {
         input_callback();
       }
+      
 #ifdef SLIP_CONF_TCPIP_INPUT
       SLIP_CONF_TCPIP_INPUT();
 #else
@@ -310,14 +319,15 @@ PROCESS_THREAD(slip_process, ev, data)
 #endif
     }
 #endif /* UIP_CONF_IPV6 */
-  }
 
+  }
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
 int
 slip_input_byte(unsigned char c)
 {
+  
   switch(state) {
   case STATE_RUBBISH:
     if(c == SLIP_END) {

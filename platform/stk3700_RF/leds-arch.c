@@ -1,10 +1,8 @@
-/*
- *
- * -----------------------------------------------------------------
- *
- * Author  :
- * Created :
- * Updated :
+/**
+ * \file
+ *         leds arch
+ * \author
+ *         Jerome Cloute-Cazalaa <Silabs>
  */
 
 #include "contiki-conf.h"
@@ -39,6 +37,6 @@ leds_arch_set(unsigned char leds)
 	else gpio_set_value(GPIO_USER_LED1, 0);
 
 	if(leds & LEDS_USER2) gpio_set_value(GPIO_USER_LED2, 1);
-	else gpio_set_value(GPIO_USER_LED2, 1);
+	else gpio_set_value(GPIO_USER_LED2, 0);
 }
 /*---------------------------------------------------------------------------*/

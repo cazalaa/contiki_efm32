@@ -1,4 +1,10 @@
-
+/**
+ * \file
+ *         Contiki main file
+ * \author
+ *         Jerome Cloute-Cazalaa <Silabs>
+ */
+ 
 #include "contiki.h"
 
 #include <stdint.h>
@@ -26,6 +32,7 @@
 #include "em_cmu.h"
 #include "em_chip.h"
 #include "em_gpio.h"
+#include "platform-init.h"
 
 #include "power.h"
 #include "usart0.h"

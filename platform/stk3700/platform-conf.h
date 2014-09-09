@@ -3,17 +3,13 @@
 
 /**
  * \file
- *         A brief description of what this file is
+ *         platform configuration file
  * \author
- *         Martin Chaplet <m.chaplet@kerlink.fr>
+ *         Jerome Cloute-Cazalaa  <Silabs>
  */
 
 #ifndef __PLATFORM_CONF_H__
 #define __PLATFORM_CONF_H__
-
-#include <stdint.h>
-#include "efm32gg990f1024.h"
-#include "gpio.h"
 
 #include <stdint.h>
 #include "efm32gg990f1024.h"
@@ -58,10 +54,15 @@
 //#define DEBUGUART_USART0 1
 //#define DEBUGUART_LEUART1 1
 #define DEBUGUART_UART0 1
+//#define DEBUGUART_CDC 1
 
 #if DEBUGUART_ITM
 #include "core_cm3.h"
 #define default_writeb     ITM_SendChar
+
+#elif DEBUGUART_CDC
+#define defaultuart_send_bytes   CDC_send_bytes
+#define defaultuart_writeb     CDC_WriteChar
 
 #elif DEBUGUART_USART0
 #define defaultuart_send_bytes   usart0_send_bytes
@@ -76,6 +77,7 @@
 #define defaultuart_drain        uart0_drain
 #define defaultuart_set_input    uart0_set_input
 #define defaultuart_get_input    uart0_get_input
+
 #elif DEBUGUART_UART1
 #define defaultuart_send_bytes   uart1_send_bytes
 #define defaultuart_writeb       uart1_writeb
@@ -158,6 +160,11 @@
 #define GPIO_USER_LED1 GPIO_PE2
 #define GPIO_USER_LED2 GPIO_PE3
 
+#define PORT_LED0       gpioPortE
+#define PORT_PIN_LED0   2
+#define PORT_LED1       gpioPortE
+#define PORT_PIN_LED1   3
+
 #define GPIO_BOOTLOADER GPIO_PD7
 
 #define SPI_ENABLE()     gpio_set_value(GPIO_USART1_CS, 0)
@@ -174,6 +181,5 @@
 #define LEDS_USER2    2
 #define LEDS_USER     LEDS_USER1
 
-#include "platform-init.h"
-
+unsigned int CDC_send_bytes(const unsigned char *seq, unsigned int len);
 #endif /* __PLATFORM_CONF_H__ */

@@ -1,3 +1,11 @@
+/**
+ * \file
+ *         Contiki configuration file
+ * \author
+ *         Jerome Cloute-Cazalaa <Silabs>
+ */
+ 
+
 #ifndef CONTIKI_CONF_H
 #define CONTIKI_CONF_H
 

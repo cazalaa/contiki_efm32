@@ -34,11 +34,13 @@
 #include <string.h>
 #include "dev/watchdog.h"
 #include "debug-uart.h"
-
+ 
+#include "platform-conf.h"  
 
 unsigned int
 dbg_send_bytes(const unsigned char *seq, unsigned int len)
 {
+gpio_set_value(GPIO_USER_LED1, !gpio_get_value(GPIO_USER_LED1));  
 #ifdef defaultuart_send_bytes
 	return defaultuart_send_bytes(seq,len);
 #else
@@ -46,7 +48,7 @@ dbg_send_bytes(const unsigned char *seq, unsigned int len)
   unsigned short left = len;
 
  // watchdog_periodic();
-
+  
   do{
 	  // Transmit the data
 	  defaultuart_writeb(*(seq + current_count));
@@ -62,6 +64,7 @@ static unsigned char dbg_write_overrun = 0;
 void
 dbg_putchar(const char ch)
 {
+
   if (dbg_write_overrun) {
     if (dbg_send_bytes((const unsigned char*)"^",1) != 1) return;
   }

@@ -39,10 +39,19 @@
 
 #include "contiki.h"
 
+#include "platform-conf.h"
+// USBCDC
+#include "em_usb.h"
+#include "em_usbtypes.h"
+#include "em_usbhal.h"
+#include "em_usbd.h"
+
 #include <stdio.h> /* For printf() */
 /*---------------------------------------------------------------------------*/
+static struct etimer et_led;
+PROCESS(led_test_process, "LED test process");
 PROCESS(hello_world_process, "Hello world process");
-AUTOSTART_PROCESSES(&hello_world_process);
+AUTOSTART_PROCESSES(&hello_world_process,&led_test_process);
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(hello_world_process, ev, data)
 {
@@ -53,3 +62,24 @@ PROCESS_THREAD(hello_world_process, ev, data)
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
+
+
+
+/*---------------------------------------------------------------------------*/
+PROCESS_THREAD(led_test_process, ev, data)
+{
+  PROCESS_BEGIN();
+
+  while(1) {
+    etimer_set(&et_led, 2*CLOCK_SECOND);
+
+    PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
+    gpio_set_value(GPIO_USER_LED2, !gpio_get_value(GPIO_USER_LED2));
+    gpio_set_value(GPIO_USER_LED1, !gpio_get_value(GPIO_USER_LED1));
+    //USBD_Write(0x81,"test\r\n",4,NULL);
+    printf("Hello, world\n");
+    
+  }
+
+  PROCESS_END();
+}

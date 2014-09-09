@@ -265,19 +265,19 @@ caddr_t _sbrk(int incr)
  * @return
  *  Number of characters that have been written.
  *****************************************************************************/
-int _write(int file, const char *ptr, int len)
-{
-  int txCount;
-
-  (void) file;
-
-  for (txCount = 0; txCount < len; txCount++)
-  {
-    RETARGET_WriteChar(*ptr++);
-  }
-
-  return len;
-}
+// int _write(int file, const char *ptr, int len)
+// {
+//   int txCount;
+// 
+//   (void) file;
+//   
+//   for (txCount = 0; txCount < len; txCount++)
+//   {
+//     RETARGET_WriteChar(*ptr++);
+//   }
+// 
+//   return len;
+// }
 #endif /* !defined( __CROSSWORKS_ARM ) && defined( __GNUC__ ) */
 
 #if defined(__ICCARM__)
@@ -447,6 +447,7 @@ FILE __stdout;
  *****************************************************************************/
 int fputc(int ch, FILE *f)
 {
+
   return(RETARGET_WriteChar(ch));
 }
 

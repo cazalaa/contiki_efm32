@@ -7,6 +7,8 @@
  * @n http://www.silabs.com
  */
 #include "platform-conf.h"
+#include "radio_config.h"  
+
 
 /*****************************************************************************
  *  Local Macros & Definitions

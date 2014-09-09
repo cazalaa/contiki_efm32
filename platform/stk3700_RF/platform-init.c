@@ -1,4 +1,10 @@
-
+/**
+ * \file
+ *         platform initialization file
+ * \author
+ *         Jerome Cloute-Cazalaa <Silabs>
+ */
+ 
 #include "contiki.h"
 
 #include <stdint.h>
@@ -19,6 +25,8 @@
 #include "dev/serial-line.h"
 #include "dev/leds.h"
 #include "dev/watchdog.h"
+#include "dev/button-sensor.h"
+#include "lib/sensors.h"
 
 #include "core_cm3.h"
 
@@ -26,6 +34,8 @@
 #include "em_cmu.h"
 #include "em_chip.h"
 #include "em_gpio.h"
+#include "gpiointerrupt.h"
+#include "efm32gg990f1024.h"
 
 #include "power.h"
 #include "usart0.h"
@@ -43,7 +53,11 @@
 #define PRINTF(...)
 #endif
 
+static struct timer debouncetimer;
+SENSORS(&button_up_sensor, &button_down_sensor);
+PROCESS_NAME(Si446x_process);
 
+// debug trace 
 void setupSWO(void)
 {
 	/* Enable GPIO Clock. */
@@ -87,15 +101,36 @@ void setupSWO(void)
 }
 
 
-void _gpio_config(void)
+void gpio_config(void)
 {
+  // Enable Port Clock to access registers
+  CMU_ClockEnable(cmuClock_HFPER, true);
+  CMU_ClockEnable(cmuClock_GPIO, true);
+
+  NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
+  NVIC_EnableIRQ(GPIO_ODD_IRQn);
+  NVIC_ClearPendingIRQ(GPIO_EVEN_IRQn);
+  NVIC_EnableIRQ(GPIO_EVEN_IRQn);
+  
   /*
    * Mux Gpios
    */
+  /* Buttons */
+	GPIO_PinModeSet(BUTTON_CONF_UP_PORT, BUTTON_CONF_UP_PIN, gpioModeInput, 0);
+  GPIO_PinModeSet(BUTTON_CONF_DOWN_PORT, BUTTON_CONF_DOWN_PIN, gpioModeInput, 0);
 
+
+  /* Set falling edge interrupt for both ports */
+  GPIO_IntConfig(BUTTON_CONF_UP_PORT, BUTTON_CONF_UP_PIN, false, true, true);
+  GPIO_IntConfig(BUTTON_CONF_DOWN_PORT, BUTTON_CONF_DOWN_PIN, false, true, true);
+  
   // Leds
   GPIO_PinModeSet(gpioPortE,2,gpioModePushPull,0);
   GPIO_PinModeSet(gpioPortE,3,gpioModePushPull,0);
+  
+  //RF IRQ
+  GPIO_PinModeSet(PORT_RF_NIRQ, PORT_PIN_RF_NIRQ, gpioModeInput, 0);
+  
 
   // USART 0
   //GPIO_PinModeSet(gpioPortE, 10, gpioModePushPull, 1); // TX
@@ -151,6 +186,8 @@ void _gpio_config(void)
   gpio_set_output_pushpull(GPIO_UART1_TX,0);
   gpio_set_input(GPIO_UART1_RX);
 #endif
+  /* RF PWDN */  // Si446x
+GPIO_PinModeSet(PORT_RF_PWRDN, PORT_PIN_RF_PWRDN, PORT_MODE_RF_PWRDN, 0);    
 
   leds_arch_init();
 }
@@ -186,4 +223,110 @@ void _spi1_config(void)
   USART_USED->ROUTE |= USART_ROUTE_TXPEN | USART_ROUTE_RXPEN |
                        USART_ROUTE_CLKPEN;
 }
+
+/*---------------------------------------------------------------------------*/
+/**
+ * \brief GPIO interrupt hanlder
+ */
+ 
+
+void
+GPIO_ODD_IRQHandler(void)
+{
+  ENERGEST_ON(ENERGEST_TYPE_IRQ);
+  if(!timer_expired(&debouncetimer)) {
+    return;
+  }
+  timer_set(&debouncetimer, CLOCK_SECOND / 8);
+
+  if(GPIO->IF & (1UL << BUTTON_CONF_UP_PIN)) 
+  {
+    GPIO->IFC = (1UL << BUTTON_CONF_UP_PIN);
+    sensors_changed(&button_up_sensor);
+  } 
+  if(GPIO->IF & (1UL << BUTTON_CONF_DOWN_PIN)) {
+    GPIO->IFC = (1UL << BUTTON_CONF_DOWN_PIN);
+    sensors_changed(&button_down_sensor); 
+  }
+  if(GPIO->IF & (1UL << PORT_PIN_RF_NIRQ)) {
+    GPIO->IFC = (1UL << PORT_PIN_RF_NIRQ);
+    // If RX packet, wake up thread
+		process_poll(&Si446x_process); 
+  }
+   
+  ENERGEST_OFF(ENERGEST_TYPE_IRQ);
+}
+/*---------------------------------------------------------------------------*/
+/**
+ * \brief GPIO interrupt hanlder
+ */
+
+
+ 
+void   
+GPIO_EVEN_IRQHandler(void)
+{
+  ENERGEST_ON(ENERGEST_TYPE_IRQ);
+  if(!timer_expired(&debouncetimer)) {
+    return;
+  }
+  timer_set(&debouncetimer, CLOCK_SECOND / 8);
+
+  if(GPIO->IF & (1UL << BUTTON_CONF_UP_PIN)) 
+  {
+    GPIO->IFC = (1UL << BUTTON_CONF_UP_PIN);
+    sensors_changed(&button_up_sensor);
+  } 
+  if(GPIO->IF & (1UL << BUTTON_CONF_DOWN_PIN)) {
+    GPIO->IFC = (1UL << BUTTON_CONF_DOWN_PIN);
+    sensors_changed(&button_down_sensor); 
+  } 
+  if(GPIO->IF & (1UL << PORT_PIN_RF_NIRQ)) {
+    
+    // If RX packet, wake up thread
+    si446x_get_int_status(0u, 0u, 0u);
+    GPIO->IFC = (1UL << PORT_PIN_RF_NIRQ);
+		process_poll(&Si446x_process); 
+    }
+
+  
+  ENERGEST_OFF(ENERGEST_TYPE_IRQ);
+}
+
+/*---------------------------------------------------------------------------*/
+void
+button_sensor_init()
+{
+  /* Init debounce timer */
+  timer_set(&debouncetimer, 0);
+
+}
+
+static int
+config_up()
+{
+  
+  return 1;
+}
+/*---------------------------------------------------------------------------*/
+/**
+ * \brief Init function for the change button.
+ *
+ * Parameters are ignored. They have been included because the prototype is
+ * dictated by the core sensor api. The return value is also not required by
+ * the API but otherwise ignored.
+ *
+ * \param type ignored
+ * \param value ignored
+ * \return ignored
+ */
+static int
+config_down()
+{
+  
+  return 1;
+}
+/*---------------------------------------------------------------------------*/
+SENSORS_SENSOR(button_up_sensor, BUTTON_SENSOR, NULL, config_up, NULL);
+SENSORS_SENSOR(button_down_sensor, BUTTON_SENSOR, NULL, config_down, NULL);
 

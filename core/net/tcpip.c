@@ -48,7 +48,7 @@
 #endif
 
 #include <string.h>
-
+#include <stdio.h>
 #define DEBUG DEBUG_NONE
 #include "net/uip-debug.h"
 
@@ -105,6 +105,7 @@ enum {
   UDP_POLL,
   PACKET_INPUT
 };
+
 
 /* Called on IP packet output. */
 #if UIP_CONF_IPV6
@@ -791,11 +792,13 @@ tcpip_uipcall(void)
     process_post_synch(ts->p, tcpip_event, ts->state);
   }
 }
+
+
 /*---------------------------------------------------------------------------*/
 PROCESS_THREAD(tcpip_process, ev, data)
 {
   PROCESS_BEGIN();
-  
+
 #if UIP_TCP
  {
    static unsigned char i;

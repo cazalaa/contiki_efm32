@@ -8,7 +8,7 @@ WITH_SPI1=1
 WITH_PM=1
 COFFEE=1
 
-ARCH += leds.c leds-arch.c ymodem.c shell-efm32hw.c symbols.c
+ARCH += leds.c leds-arch.c ymodem.c shell-efm32hw.c symbols.c platform-init.c
 
 ifndef CONTIKI_TARGET_MAIN
 CONTIKI_TARGET_MAIN = contiki-main.c

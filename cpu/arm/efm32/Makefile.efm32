@@ -64,7 +64,7 @@ TARGET_LIBFILES =   emlib.a
 ### Define the source files we have in the EFM32 port
 ##########
 #CONTIKI_CPU_DIRS = . ./dev $(CONTIKI_CPU_ARM_COMMON) $(CONTIKI_CPU)
-CONTIKI_CPU_DIRS = . ./dev ../common ../common/dbg-io $(CONTIKI_CPU) ./$(CONTIKI_CPU_FAMILY)/Source 
+CONTIKI_CPU_DIRS = . ./dev ../common ../common/dbg-io ./emusb/src $(CONTIKI_CPU) ./$(CONTIKI_CPU_FAMILY)/Source 
 
 # Light implementation of printf functions .. save about 28kB of binary size
 TARGETLIBS = dbg-printf.c dbg-puts.c dbg-putchar.c dbg-sprintf.c dbg-snprintf.c strformat.c
@@ -74,8 +74,9 @@ TARGETLIBS = dbg-printf.c dbg-puts.c dbg-putchar.c dbg-sprintf.c dbg-snprintf.c 
 # ifdef BOOTLOADER
 # Bootloader doesn't need process or any advanced function
 # EFM32 = retargetio.c debug-uart.c
-EFM32     = clock.c rtimer-arch.c retargetio.c debug-uart.c 
+EFM32     = clock.c rtimer-arch.c  debug-uart.c #retargetio.c
 EFM32_DEVICES  = gpio.c watchdog.c efm32flash.c burtc.c power.c dmactrl.c lesense.c adc.c
+EFM32_SLIP = slip-arch.c slip.c uip-arch.c debug-buffer.c
 
 ifdef WITH_USART0
   EFM32_DEVICES  += usart0.c
@@ -130,7 +131,7 @@ ifdef WITH_UART1
   CFLAGS += -DWITH_UART1
 endif
 
-CONTIKI_CPU_SOURCEFILES += $(TARGETLIBS) $(EFM32) $(EFM32_DEVICES)
+CONTIKI_CPU_SOURCEFILES += $(TARGETLIBS) $(EFM32) $(EFM32_DEVICES) $(EFM32_SLIP)
 CONTIKI_CPU_SOURCEFILES += system_$(CONTIKI_CPU_FAMILY).c
 
 CONTIKI_SOURCEFILES        += $(CONTIKI_CPU_SOURCEFILES)
@@ -141,6 +142,7 @@ INCLUDEPATHS += -I$(CONTIKI_CPU_ARM_COMMON)/CMSIS/Include \
                 -I$(CONTIKI_CPU) \
                 -I$(CONTIKI_CPU)/$(CONTIKI_CPU_FAMILY)/Include \
                 -I$(CONTIKI_CPU)/emlib/inc \
+                -I$(CONTIKI_CPU)/emusb/inc \
                 -I$(CONTIKI_CPU)/dev \
                 ${addprefix -I,$(APPDIRS)} \
 
@@ -176,7 +178,7 @@ FLASHEROPTS = --flash
 # -MF  : Specify a file to write the dependencies to.
 DEPFLAGS = -MMD -MP -MF $(@:.o=.d)
 
-WARNINGFLAGS = -Wall -Wextra
+#WARNINGFLAGS = -Wall -Wextra
 OPTIMFLAGS =   -ffunction-sections -fdata-sections -fomit-frame-pointer
 ARCHFLAGS =    -mcpu=cortex-m3 -mthumb -mfix-cortex-m3-ldrd
 
@@ -215,6 +217,7 @@ $(EMLIB_OBJECTDIR)/%.o: $(EMLIB_SRCDIR)/%.c
 
 $(EMLIB_OBJECTDIR):
 	mkdir -p $@
+
 
 # Startup rule	
 $(STARTUP): $(CONTIKI_CPU)/$(CONTIKI_CPU_FAMILY)/Source/startup_$(CONTIKI_CPU_FAMILY).s
@@ -257,5 +260,5 @@ clean: clean_cpu
 clean_cpu:
 	@echo "Cleaning:"
 	-rm -rf $(BUILTSRCDIR)
-	rm -rf emlib.a $(EMLIB_OBJECTDIR)
+	rm -rf emlib.a $(EMLIB_OBJECTDIR) $(EMUSB_OBJECTDIR)
 	@echo " "

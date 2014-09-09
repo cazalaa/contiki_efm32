@@ -3,17 +3,13 @@
 
 /**
  * \file
- *         A brief description of what this file is
+ *         platform configuration file
  * \author
- *         Martin Chaplet <m.chaplet@kerlink.fr>
+ *         Jerome Cloute-Cazalaa <Silabs>
  */
 
 #ifndef __PLATFORM_CONF_H__
 #define __PLATFORM_CONF_H__
-
-#include <stdint.h>
-#include "efm32gg990f1024.h"
-#include "gpio.h"
 
 #include <stdint.h>
 #include "efm32gg990f1024.h"
@@ -33,9 +29,6 @@
 // Default RCO clock is 14 MHz
 #define HFRCOBAND_VALUE _CMU_HFRCOCTRL_BAND_14MHZ
 #define HFRCO_FREQ (14*MHZ)
-
-//#define HFRCOBAND_VALUE _CMU_HFRCOCTRL_BAND_28MHZ
-//#define HFRCO_FREQ (28*MHZ)
 
 // Use HFRCO as HFCLK
 #define HFCLK_FREQ HFRCO_FREQ
@@ -58,10 +51,15 @@
 //#define DEBUGUART_USART0 1
 //#define DEBUGUART_LEUART1 1
 #define DEBUGUART_UART0 1
+//#define DEBUGUART_CDC 1
 
 #if DEBUGUART_ITM
 #include "core_cm3.h"
-#define default_writeb     ITM_SendChar
+#define default_writeb     ITM_SendChar 
+
+#elif DEBUGUART_CDC
+#define defaultuart_send_bytes   CDC_send_bytes
+#define defaultuart_writeb     CDC_WriteChar
 
 #elif DEBUGUART_USART0
 #define defaultuart_send_bytes   usart0_send_bytes
@@ -157,6 +155,17 @@
 
 #define GPIO_USER_LED1 GPIO_PE2
 #define GPIO_USER_LED2 GPIO_PE3
+
+#define PORT_LED0       gpioPortE
+#define PORT_PIN_LED0   2
+#define PORT_LED1       gpioPortE
+#define PORT_PIN_LED1   3
+
+/* Buttons ports STK3700 */
+#define BUTTON_CONF_UP_PORT             gpioPortB
+#define BUTTON_CONF_UP_PIN              9
+#define BUTTON_CONF_DOWN_PORT           gpioPortB
+#define BUTTON_CONF_DOWN_PIN            10
 
 #define GPIO_BOOTLOADER GPIO_PD7
 
@@ -257,14 +266,13 @@
  * might not build with some extended drivers
  * due to data memory overflow */
 
-//#define RADIO_DRIVER_EXTENDED_SUPPORT
+#define RADIO_DRIVER_EXTENDED_SUPPORT
 
 #include "si446x_api_lib.h"
 #include "si446x_defs.h"
 #include "si446x_nirq.h"
 #include "radio_comm.h"
 #include "radio_hal.h"
-#include "radio_config.h"  
 #include "si446x_radio.h"
 #include "radiopro2.h"
 #include "spi.h"
@@ -273,5 +281,8 @@
 #include "em_cmu.h"
 #include "stdarg.h" 
 #include "platform-init.h"   
+
+
+
 
 #endif /* __PLATFORM_CONF_H__ */

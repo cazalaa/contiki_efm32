@@ -70,11 +70,12 @@ void UART0_RX_IRQHandler(void)
   unsigned char c;
 
   ENERGEST_ON(ENERGEST_TYPE_IRQ);
-
+  
   if(UART0->STATUS & UART_STATUS_RXDATAV)
-  {
-    c = USART_Rx(UART0);
-    if(uart0_input_handler != NULL) uart0_input_handler(c);
+  { 
+      
+    c = USART_Rx(UART0); 
+    if(uart0_input_handler != NULL)  uart0_input_handler(c); 
   }
   /*
   else

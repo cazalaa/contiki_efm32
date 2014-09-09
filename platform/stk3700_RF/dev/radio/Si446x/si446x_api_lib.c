@@ -10,6 +10,8 @@
  */
 
 #include "platform-conf.h"
+#include "radio_config.h"  
+
 
 union si446x_cmd_reply_union Si446xCmd;
 uint8_t Pro2Cmd[16];
