@@ -64,7 +64,7 @@
 static int (*uart0_input_handler)(unsigned char c);
 
 /*---------------------------------------------------------------------------*/
-//UART0_TX_IRQHandler
+//UART0_RX_IRQHandler
 void UART0_RX_IRQHandler(void)
 {
   unsigned char c;

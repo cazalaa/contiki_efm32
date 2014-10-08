@@ -97,14 +97,14 @@ static uint8_t is_gateway;
 void uip_log(char *msg) { puts(msg); }
 
 #ifndef RF_CHANNEL
-#define RF_CHANNEL              26
+#define RF_CHANNEL              0
 #endif
 
 #ifndef NODE_ID
-#define NODE_ID	0x03
+#define NODE_ID	0x02
 #endif /* NODE_ID */
 
-static unsigned short node_id;
+static unsigned short node_id=NODE_ID;
 
 static void set_rime_addr(void) {
 	rimeaddr_t n_addr;

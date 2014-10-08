@@ -107,10 +107,7 @@ void gpio_config(void)
   CMU_ClockEnable(cmuClock_HFPER, true);
   CMU_ClockEnable(cmuClock_GPIO, true);
 
-  NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
-  NVIC_EnableIRQ(GPIO_ODD_IRQn);
-  NVIC_ClearPendingIRQ(GPIO_EVEN_IRQn);
-  NVIC_EnableIRQ(GPIO_EVEN_IRQn);
+
   
   /*
    * Mux Gpios
@@ -131,6 +128,11 @@ void gpio_config(void)
   //RF IRQ
   GPIO_PinModeSet(PORT_RF_NIRQ, PORT_PIN_RF_NIRQ, gpioModeInput, 0);
   
+
+  NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
+  NVIC_EnableIRQ(GPIO_ODD_IRQn);
+  NVIC_ClearPendingIRQ(GPIO_EVEN_IRQn);
+  NVIC_EnableIRQ(GPIO_EVEN_IRQn);
 
   // USART 0
   //GPIO_PinModeSet(gpioPortE, 10, gpioModePushPull, 1); // TX
@@ -234,6 +236,7 @@ void
 GPIO_ODD_IRQHandler(void)
 {
   ENERGEST_ON(ENERGEST_TYPE_IRQ);
+ 
   if(!timer_expired(&debouncetimer)) {
     return;
   }
@@ -251,6 +254,8 @@ GPIO_ODD_IRQHandler(void)
   if(GPIO->IF & (1UL << PORT_PIN_RF_NIRQ)) {
     GPIO->IFC = (1UL << PORT_PIN_RF_NIRQ);
     // If RX packet, wake up thread
+    si446x_get_int_status(0u, 0u, 0u);
+    GPIO->IFC = (1UL << PORT_PIN_RF_NIRQ);
 		process_poll(&Si446x_process); 
   }
    
@@ -267,6 +272,7 @@ void
 GPIO_EVEN_IRQHandler(void)
 {
   ENERGEST_ON(ENERGEST_TYPE_IRQ);
+  
   if(!timer_expired(&debouncetimer)) {
     return;
   }
@@ -284,6 +290,7 @@ GPIO_EVEN_IRQHandler(void)
   if(GPIO->IF & (1UL << PORT_PIN_RF_NIRQ)) {
     
     // If RX packet, wake up thread
+    
     si446x_get_int_status(0u, 0u, 0u);
     GPIO->IFC = (1UL << PORT_PIN_RF_NIRQ);
 		process_poll(&Si446x_process); 
