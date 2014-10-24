@@ -268,8 +268,8 @@ PROCESS_THREAD(slip_process, ev, data)
     /* Move packet from rxbuf to buffer provided by uIP. */
     uip_len = slip_poll_handler(&uip_buf[UIP_LLH_LEN],
 				UIP_BUFSIZE - UIP_LLH_LEN);
-   	for(i = 0; i < uip_len; i++) {            // ajout car buffer mal passe
-	  uip_buf[i] = rxbuf[i];
+   /*	for(i = 0; i < uip_len; i++) {            // ajout car buffer mal passe
+	  uip_buf[i] = rxbuf[i];      */
 	}
 
 #if !UIP_CONF_IPV6
