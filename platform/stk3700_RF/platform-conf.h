@@ -30,8 +30,10 @@
 #define HFRCOBAND_VALUE _CMU_HFRCOCTRL_BAND_14MHZ
 #define HFRCO_FREQ (14*MHZ)
 
+#define HFRXO_FREQ (48*MHZ)
+
 // Use HFRCO as HFCLK
-#define HFCLK_FREQ HFRCO_FREQ
+#define HFCLK_FREQ HFRXO_FREQ
 
 // No divider for peripheral clock
 #define HFPERCLK_DIV  1

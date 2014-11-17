@@ -2,10 +2,27 @@
 CONTIKI_TARGET_DIRS = . apps ../../apps/shell  dev  dev/radio dev/radio/Si446x  
 #emlib/src   hal/Device/EnergyMicro/EFM32GG/Source
 
+ifdef NODEID
+CFLAGS += -DNODEID=$(NODEID)
+CFLAGS += -DNODE_ID=$(NODEID)
+endif
+
+ifdef UIP_CONF_IPV6
+CFLAGS += -DWITH_UIP6=1
+endif
+
+ifdef DEBUG
+CFLAGS += -DDEBUG=1
+endif
+
 ifdef WITH_UIP6
 CFLAGS+=-DAUTOSTART_ENABLE -DUIP_CONF_IPV6
 else
 CFLAGS+=-DAUTOSTART_ENABLE
+endif
+
+ifndef BASE_IP
+BASE_IP := 192.10.1.1
 endif
 
 WITH_UART0=1
@@ -14,7 +31,7 @@ WITH_PM=1
 COFFEE=1
 
 PLATFORM_INIT = platform-init.c sensors.c
-ARCH += leds.c leds-arch.c ymodem.c shell-efm32hw.c symbols.c 
+ARCH += leds.c leds-arch.c   
 RADIOPRO2 =  spi.c radiopro2.c radio_hal.c radio_comm.c si446x_api_lib.c si446x_nirq.c si446x_radio.c
 EFM32_USBCDC =  em_usbd.c em_usbdch9.c em_usbdep.c em_usbhal.c em_usbdint.c em_usbtimer.c
 

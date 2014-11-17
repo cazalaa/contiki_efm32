@@ -4,7 +4,7 @@
  * \author
  *         Benjamin Vedder
  */
-
+#include "platform-conf.h"
 #include "contiki.h"
 #include "dev/leds.h"
 //#include "dev/cc2520/cc2520.h"
@@ -39,7 +39,7 @@ PROCESS_THREAD(hello_world_process, ev, data)
 		/* Wait on our timer */
 		PROCESS_WAIT_EVENT_UNTIL(ev == PROCESS_EVENT_TIMER);
 		
-		leds_toggle(LEDS_GREEN);
+		GPIO_PinOutToggle(PORT_LED0, PORT_PIN_LED1);
 		/* reset the timer so we can wait on it again */
 		etimer_reset(&timer);
 	}

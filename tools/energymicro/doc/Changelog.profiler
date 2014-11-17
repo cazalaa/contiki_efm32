@@ -1,0 +1,45 @@
+==== Version 0.99 ====
+[Demos]
+ * Added Tiny Gecko demos.
+ * Demo mode now checks what kind of board you have and selects applicable
+   demos.
+ * Added box for selecting interrupt vector table.
+ * Updated flashloader to work with tiny gecko.
+ * Other minor tweaks.
+
+==== Version 0.93 ====
+[Graph]
+ * Fixed some calculations for averages.
+
+
+==== Version 0.91 ====
+[General]
+ * Added functionality for loading traces
+
+[GUI]
+ * Merge Start/Stop button
+ * Added preference markers
+ * Added help functionality.
+
+[Sampler]
+ * Moved sampling into it's own thread.
+ * Moved setup of sampling interval into preferences.
+
+[Graph]
+ * Implemented zoom level.
+ * Ability to setup the graph in preferences.
+ * Ability to set markers in right-click menu.
+ * Use markers to measure a small region of the graph.
+
+[Codeview]
+ * Ability to set user specified syntax highlightning colors
+ * Show the help text after user has clicked on the graph.
+
+[Energy Profile]
+ * Added a progress bar to show energy contribution graphically
+ * Double click on a function to select a color for drawing that function
+   in the graph. 
+
+==== Version 0.90 Technology Preview ====
+ * Initial Release
+

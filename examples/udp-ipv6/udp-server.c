@@ -35,13 +35,14 @@
 #include <string.h>
 
 #define DEBUG DEBUG_PRINT
-#include "net/ip/uip-debug.h"
+#include "net/uip-debug.h"
 
 #define UIP_IP_BUF   ((struct uip_ip_hdr *)&uip_buf[UIP_LLH_LEN])
 
 #define MAX_PAYLOAD_LEN 120
 
 static struct uip_udp_conn *server_conn;
+static struct etimer et_led;
 
 PROCESS(udp_server_process, "UDP server process");
 PROCESS(led_process, "LED process");
@@ -141,3 +142,4 @@ PROCESS_THREAD(led_process, ev, data)
 }
 
 /*---------------------------------------------------------------------------*/
+

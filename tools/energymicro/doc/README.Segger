@@ -1,0 +1,42 @@
+
+Requirements
+============
+Please make sure that you have installed libusb as this is necessary for 
+the J-Link to work via USB.
+You can install it the following way for all apt-able Linux derivates:
+
+apt-get -update
+apt-get -install libusb
+
+This will update the apt-get package resources and download and install
+libusb. Please unplug and replug your J-Link after successful
+libusb installation.
+
+You also need to make sure the libreadline is installed on your system.
+This library is needed by the JLinkExe utility.
+
+Installing the shared library
+=============================
+To install the delivered shared library in a system directory perform the following
+steps as root:
+- Copy the library in a system directory for example /usr/lib 
+  cp libjlinkarm.so.* /usr/lib
+
+- Update the cache of dynamic loader and setup symbolic links by running:
+  ldconfig
+
+Running JLinkExe with standard user rights
+==========================================
+In order to run JLinkExe with standard user rights you have to do the following:
+
+- Place the rule file "45-jlink.rules" provided with this J-Link software package
+  at /etc/udev/rules.d/
+
+- Make sure that you are member of the group "plugdev"
+
+- If the group "plugdev" does not exist, you have to create it:
+  Command line:
+  groupadd plugdev                      // Creates new group "plugdev"
+	usermod -a -G plugdev <Username>      // Appends user <Username> to the group "plugdev"
+
+- Restart your system

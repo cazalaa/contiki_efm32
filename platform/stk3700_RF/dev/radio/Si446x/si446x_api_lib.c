@@ -12,6 +12,13 @@
 #include "platform-conf.h"
 #include "radio_config.h"  
 
+//#define DEBUG 1
+#if DEBUG
+#include <stdio.h>
+#define PRINTF(...) printf(__VA_ARGS__)
+#else
+#define PRINTF(...) do {} while (0)
+#endif
 
 union si446x_cmd_reply_union Si446xCmd;
 uint8_t Pro2Cmd[16];
@@ -436,7 +443,17 @@ void si446x_fifo_info(uint8_t FIFO)
  */
 void si446x_write_tx_fifo(uint8_t numBytes, uint8_t* pTxData)
 {
+//int i;
+
   radio_comm_WriteData( SI446X_CMD_ID_WRITE_TX_FIFO, 0, numBytes, pTxData );
+/*	PRINTF("loaded to FIFO :\n\r");
+	  for(i=0; i<numBytes; i++)
+	  {
+		  PRINTF("%02X ",((uint8_t *)pTxData)[i]);
+		  if((i%16) == 15) PRINTF("\n\r");
+	  }
+	  PRINTF("\n\r");
+*/
 }
 
 /*!
@@ -447,7 +464,16 @@ void si446x_write_tx_fifo(uint8_t numBytes, uint8_t* pTxData)
  */
 void si446x_read_rx_fifo(uint8_t numBytes, uint8_t* pRxData)
 {
+//int i;
   radio_comm_ReadData( SI446X_CMD_ID_READ_RX_FIFO, 0, numBytes, pRxData );
+	
+/*   PRINTF("Received Payload2 Contents :\n\r");
+	  for(i=0; i<numBytes; i++)
+	  {
+		  PRINTF("%02X ",((uint8_t *)pRxData)[i]);
+		  if((i%16) == 15) PRINTF("\n\r");
+	  }
+	  PRINTF("\n\r");*/
 }
 
 /*!

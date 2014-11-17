@@ -97,7 +97,7 @@ PROCESS_THREAD(webserver_nogui_process, ev, data)
   PROCESS_BEGIN();
 
   httpd_init();
-
+  printf("Webserver nogui started\n\n\r");
   while(1) {
     PROCESS_WAIT_EVENT_UNTIL(ev == tcpip_event);
     httpd_appcall(data);
@@ -105,7 +105,8 @@ PROCESS_THREAD(webserver_nogui_process, ev, data)
   
   PROCESS_END();
 }
-AUTOSTART_PROCESSES(&border_router_process,&webserver_nogui_process);
+PROCESS(udp_server_process, "UDP server process");
+AUTOSTART_PROCESSES(&udp_server_process,&border_router_process,&webserver_nogui_process);
 
 static const char *TOP = "<html><head><title>ContikiRPL</title></head><body>\n";
 static const char *BOTTOM = "</body></html>\n";
@@ -117,6 +118,9 @@ static char *bufptr, *bufend;
 #else
 static char buf[2560];
 static int blen;
+void *temp="no data";
+static struct uip_udp_conn *server_conn;
+
 #define ADD(...) do {                                                   \
     blen += snprintf(&buf[blen], sizeof(buf) - blen, __VA_ARGS__);      \
   } while(0)
@@ -140,6 +144,32 @@ ipaddr_add(const uip_ipaddr_t *addr)
       }
       ADD("%x", a);
     }
+  }
+}
+/*---------------------------------------------------------------------------*/
+static void
+tcpip_handler(void)
+{
+  static int seq_id;
+  //char buf[MAX_PAYLOAD_LEN];
+
+  if(uip_newdata()) {
+    //leds_toggle(LEDS_RED);
+  //GPIO_PinOutToggle(PORT_LED0, PORT_PIN_LED1);
+    ((char *)uip_appdata)[uip_datalen()] = 0;
+    temp = uip_appdata;
+    //PRINTF("Server received: '%s' from ", (char *)uip_appdata);
+    //PRINT6ADDR(&UIP_IP_BUF->srcipaddr);
+    //PRINTF("\r\n");
+
+    /*uip_ipaddr_copy(&server_conn->ripaddr, &UIP_IP_BUF->srcipaddr);
+    PRINTF("Responding with message: ");
+    sprintf(buf, "Hello from the server! (%d)", ++seq_id);
+    PRINTF("%s\r\n", buf);
+
+    uip_udp_packet_send(server_conn, buf, strlen(buf));*/
+    /* Restore server connection to allow data from any node */
+    //memset(&server_conn->ripaddr, 0, sizeof(server_conn->ripaddr));
   }
 }
 /*---------------------------------------------------------------------------*/
@@ -274,10 +304,22 @@ PT_THREAD(generate_routes(struct httpd_state *s))
 #endif
 
   ADD("<br><br>\n");
-  ADD("</pre>Debug print<pre>");
+/*  ADD("</pre>Debug print<pre>");
   ADD(debug_buffer_get_all());
 
-  SEND_STRING(&s->sout, buf);
+  SEND_STRING(&s->sout, buf);*/
+
+ADD("</pre>Temperature data<pre>");
+//SEND_STRING(&s->sout, buf);
+//temp = "test";
+ADD("<br><i>%s</i></br>",(char *)temp);
+
+/*ADD("<br><i>");
+for(r = 0; r <4; r++) {
+ADD("%s",(char *)temp[r]);}
+ADD("</i></br>");*/
+SEND_STRING(&s->sout, buf);
+
   SEND_STRING(&s->sout, BOTTOM);
 
   PSOCK_END(&s->sout);
@@ -329,10 +371,10 @@ set_prefix_64(uip_ipaddr_t *prefix_64)
   memcpy(&prefix, prefix_64, 16);
   memcpy(&ipaddr, prefix_64, 16);
   prefix_set = 1;
-  gpio_set_value(GPIO_USER_LED2, !gpio_get_value(GPIO_USER_LED2));
+  //gpio_set_value(GPIO_USER_LED2, !gpio_get_value(GPIO_USER_LED2));
   uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
   uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);
-  gpio_set_value(GPIO_USER_LED2, !gpio_get_value(GPIO_USER_LED2));
+  //gpio_set_value(GPIO_USER_LED2, !gpio_get_value(GPIO_USER_LED2));
   //printf("PRE %d\n", prefix_set);
   }  
 /*---------------------------------------------------------------------------*/
@@ -352,6 +394,7 @@ PROCESS_THREAD(border_router_process, ev, data)
   NETSTACK_MAC.off(0);
   
   PROCESS_PAUSE();
+
    printf("RPL-Border router started\n\n\r");
   #if 0
    /* The border router runs with a 100% duty cycle in order to ensure high
@@ -372,7 +415,6 @@ PROCESS_THREAD(border_router_process, ev, data)
     rpl_set_prefix(dag, &prefix, 64);
     printf("created a new RPL dag\n");
   }
-   printf("after dag\n");
   /* Now turn the radio on, but disable radio duty cycling.
    * Since we are the DAG root, reception delays would constrain mesh throughbut.
    */
@@ -380,7 +422,7 @@ PROCESS_THREAD(border_router_process, ev, data)
 //#if DEBUG || 1
   print_local_addresses();
 //#endif
-  
+
   static struct etimer timer;
   etimer_set(&timer, 2 * CLOCK_CONF_SECOND);
   
@@ -393,5 +435,41 @@ PROCESS_THREAD(border_router_process, ev, data)
   PROCESS_END();
 }
 /*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/
+PROCESS_THREAD(udp_server_process, ev, data)
+{
+#if UIP_CONF_ROUTER
+  uip_ipaddr_t ipaddr;
+#endif /* UIP_CONF_ROUTER */
+
+  PROCESS_BEGIN();
+  PRINTF("UDP server started\r\n");
+
+#if UIP_CONF_ROUTER
+/*  uip_ip6addr(&ipaddr, 0xaaaa, 0, 0, 0, 0, 0, 0, 0);
+  uip_ds6_set_addr_iid(&ipaddr, &uip_lladdr);
+  uip_ds6_addr_add(&ipaddr, 0, ADDR_AUTOCONF);*/
+#endif /* UIP_CONF_ROUTER */
+
+/*  print_local_addresses();
+*/
+  server_conn = udp_new(NULL, 0, NULL);
+  
+ if(server_conn != NULL) {
+ udp_bind(server_conn, UIP_HTONS(3000));
+GPIO_PinOutToggle(PORT_LED0, PORT_PIN_LED0);
+ }
+else
+GPIO_PinOutToggle(PORT_LED0, PORT_PIN_LED1);
+  while(1) {
+    PROCESS_YIELD();
+    if(ev == tcpip_event) {
+ GPIO_PinOutToggle(PORT_LED0, PORT_PIN_LED1);
+      tcpip_handler();
+    }
+  }
+
+  PROCESS_END();
+}
 
 

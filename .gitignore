@@ -25,6 +25,8 @@
 *.c128
 *.c64
 *.cc2538dk
+*.stk3700
+*.stk3700_RF
 *.report
 summary
 *.summary
@@ -33,7 +35,6 @@ summary
 *~
 .DS_Store
 obj_*
-symbols.*
 Makefile.target
 doc/html
 patches-*
@@ -74,7 +75,6 @@ contiki-cc2530dk.lib
 *.dsc
 
 #cc65 build artifacts
-*.S
 *.eth
 *.dsk
 *.2mg

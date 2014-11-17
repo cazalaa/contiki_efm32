@@ -1,0 +1,81 @@
+Energy Mirco energyAware tools
+=========================================================================
+Feedback and bug reports are very much appreciated and should be directed 
+to http://support.energymicro.com. Please mark the subject with "Linux".
+
+1. License:
+=========================================================================
+DISCLAIMER OF WARRANTY/LIMITATION OF REMEDIES: Energy Micro AS has no
+obligation to support this Software. Energy Micro AS is providing the
+Software "AS IS", with no express or implied warranties of any kind,
+including, but not limited to, any implied warranties of merchantability
+or fitness for any particular purpose or warranties against infringement
+of any proprietary rights of a third party.
+
+Energy Micro AS will not be liable for any consequential, incidental, or
+special damages, or any other relief, or for any claim by any third party,
+arising from your use of this Software.
+
+2. Package contents:
+=========================================================================
+This package contains:
+
+ * energyAware Designer (eADesigner.sh)
+   - Tool for configuring peripherals and pins in a GUI.
+
+ * energyAware Commander (eACommander.sh)
+   - Tool for configuring kits and flashing the EFM32.
+
+ * energyAware Profiler (eAProfiler.sh)
+   - Profiling tool for getting power data.
+
+ * GDB Server (gdbserver.sh)
+   - GDB servert to use with the onboard J-link debugger.
+
+ * J-Link Commander (jlink.sh)
+   - Command line utility for controlling the onboard J-link debugger.
+
+
+3. Requirements:
+=========================================================================
+The included binaries are 32 bit binaries. On 64 bit machines, this
+often means that you need to install the 32 bit compatability libraries
+to run the tools.
+
+In particular you need:
+ * libreadline
+ * libusb
+ * Qt
+
+On ArchLinux:
+ * lib32-readline
+ * lib32-libusb-compat
+ * lib32-qt
+
+On 64-bit Linux Mint
+ * lib32readline5
+
+On 64-bit CentOS6
+ * compat-readline5.i686
+ * libusb.i686
+ * qt.i686
+ * qt-x11.i686
+
+After installing libusb you need to unplug and replug the kit.
+
+
+4. Using the tools with standard user rights:
+=========================================================================
+You need to be able to access the USB device as a standard user. On
+systems using udev (most modern distros), you can use the
+"45-jlink.rules" file found in the doc/ folder.
+
+- Place doc/45-jlink.rules in /etc/udev/rules.d/ :
+  * > cp doc/45-jlink.rules /etc/udev/rules.d/
+
+- Make sure you are a member of the group "plugdev", if the group
+  does not exist, you must create it.
+  * > groupadd plugdev
+  * > usermod -a -G plugdev <username>
+
+On most system you need to restart for the changes to take effect.

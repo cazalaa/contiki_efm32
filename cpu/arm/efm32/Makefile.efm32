@@ -159,7 +159,7 @@ SIZE     = arm-none-eabi-size
 
 SIZEFLAGS = -A
 
-FLASHER = sh start-eACommander.sh 
+FLASHER = sh eACommander.sh 
 
 # Check if we are running under Windows
 ifeq ($(HOST_OS),Windows)

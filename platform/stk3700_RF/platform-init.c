@@ -45,7 +45,7 @@
 #include "efm32flash.h"
 #include "dmactrl.h"
 
-#define DEBUG 1
+//#define DEBUG 1
 #if DEBUG
 #include <stdio.h>
 #define PRINTF(...) printf(__VA_ARGS__)
@@ -251,13 +251,13 @@ GPIO_ODD_IRQHandler(void)
     GPIO->IFC = (1UL << BUTTON_CONF_DOWN_PIN);
     sensors_changed(&button_down_sensor); 
   }
-  if(GPIO->IF & (1UL << PORT_PIN_RF_NIRQ)) {
+  /*if(GPIO->IF & (1UL << PORT_PIN_RF_NIRQ)) {
     GPIO->IFC = (1UL << PORT_PIN_RF_NIRQ);
     // If RX packet, wake up thread
     si446x_get_int_status(0u, 0u, 0u);
-    GPIO->IFC = (1UL << PORT_PIN_RF_NIRQ);
+    //GPIO->IFC = (1UL << PORT_PIN_RF_NIRQ);
 		process_poll(&Si446x_process); 
-  }
+  }*/
    
   ENERGEST_OFF(ENERGEST_TYPE_IRQ);
 }
@@ -266,17 +266,23 @@ GPIO_ODD_IRQHandler(void)
  * \brief GPIO interrupt hanlder
  */
 
+void HardFault_handler(void) {
+printf("Hard fault\n\r");
+	}
 
- 
+void MemManage_handler(void) {
+printf("Hard fault\r\n");
+	}
+
 void   
 GPIO_EVEN_IRQHandler(void)
 {
   ENERGEST_ON(ENERGEST_TYPE_IRQ);
   
-  if(!timer_expired(&debouncetimer)) {
+  /*if(!timer_expired(&debouncetimer)) {
     return;
   }
-  timer_set(&debouncetimer, CLOCK_SECOND / 8);
+  timer_set(&debouncetimer, CLOCK_SECOND / 8);*/
 
   if(GPIO->IF & (1UL << BUTTON_CONF_UP_PIN)) 
   {
@@ -293,7 +299,9 @@ GPIO_EVEN_IRQHandler(void)
     
     si446x_get_int_status(0u, 0u, 0u);
     GPIO->IFC = (1UL << PORT_PIN_RF_NIRQ);
-		process_poll(&Si446x_process); 
+    if (Si446xCmd.GET_INT_STATUS.PH_PEND & SI446X_CMD_GET_INT_STATUS_REP_PACKET_RX_PEND_MASK)
+		process_poll(&Si446x_process);
+    else NETSTACK_RADIO.on();
     }
 
   

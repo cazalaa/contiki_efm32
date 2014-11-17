@@ -97,7 +97,7 @@ static uint8_t is_gateway;
 void uip_log(char *msg) { puts(msg); }
 
 #ifndef RF_CHANNEL
-#define RF_CHANNEL              0
+#define RF_CHANNEL              1
 #endif
 
 #ifndef NODE_ID
@@ -171,11 +171,14 @@ main(void)
   rimeaddr_t addr;
   uint64_t uuid;
 
+  uint8_t longaddr[8];
+  uint16_t shortaddr;
+
   uint32_t u32_fullresetcause, u32_resetcause;
 
   CHIP_Init();
-
-  CMU_HFRCOBandSet(HFRCOBAND_VALUE);
+	
+  //CMU_HFRCOBandSet(HFRCOBAND_VALUE);
   CMU_ClockSelectSet(cmuClock_HF, cmuSelect_HFXO);
   // Get Full Reset Cause as soon as possible
   u32_fullresetcause = RMU->RSTCAUSE;
@@ -198,14 +201,17 @@ main(void)
 
   uuid = SYSTEM_GetUnique();
   efm32_flash_init();
+   process_init();
   
+#ifndef NO_RTIMER
+    // Process Init
+    rtimer_init();
+    //printf("rtimer init\n\r");
+#endif
   
-  
+  process_start(&etimer_process, NULL); 
   
   ctimer_init();
-  
-  
-	//set_rime_addr();
   
   button_sensor_init(); 
 
@@ -230,17 +236,11 @@ main(void)
 #warning "No Debug UART configured"
 #endif
 
-#ifndef NO_RTIMER
-    // Process Init
-    rtimer_init();
-    printf("rtimer init\n\r");
-#endif
 
 
  // i2c_init(400);
 
-  process_init();
-  process_start(&etimer_process, NULL);
+
   process_start(&sensors_process, NULL);
  
   serial_line_init();
@@ -252,18 +252,17 @@ main(void)
   energest_init();
   ENERGEST_ON(ENERGEST_TYPE_CPU);
   //printf("\r\nenergest init done \r\n");
-  autostart_start(autostart_processes);
+  //autostart_start(autostart_processes);
   //printf("\r\nautostart done \r\n");
   /*
    * This is the scheduler loop.
    */
   watchdog_start();
   node_id = NODE_ID;
-    //printf("\e[1;1H\e[2J");
-     // gpio_set_value(GPIO_USER_LED2, !gpio_get_value(GPIO_USER_LED2));
+  
+  printf("\e[1;1H\e[2J"); // clear terminal if supported
   printf("\r\nWelcome to STK3700_RF \r\n");
- // gpio_set_value(GPIO_USER_LED2, !gpio_get_value(GPIO_USER_LED2));
-printf(CONTIKI_VERSION_STRING " started. ");
+  printf(CONTIKI_VERSION_STRING " started. ");
 	if(node_id > 0) {
 		printf("Node id is set to %u.\r\n", node_id);
 	} else {
@@ -271,15 +270,10 @@ printf(CONTIKI_VERSION_STRING " started. ");
 	}
  	set_rime_addr();
 #if WITH_UIP6
-	/* memcpy(&uip_lladdr.addr, ds2411_id, sizeof(uip_lladdr.addr)); */
 	memcpy(&uip_lladdr.addr, rimeaddr_node_addr.u8,
 		UIP_LLADDR_LEN > RIMEADDR_SIZE ? RIMEADDR_SIZE : UIP_LLADDR_LEN);
 
-	/* Setup nullmac-like MAC for 802.15.4 */
-/*   sicslowpan_init(sicslowmac_init(&cc2520_driver)); */
-/*   printf(" %s channel %u\n", sicslowmac_driver.name, RF_CHANNEL); */
-
-	/* Setup X-MAC for 802.15.4 */
+/* Setup X-MAC for 802.15.4 */
 	queuebuf_init();
 	NETSTACK_RDC.init();
 	NETSTACK_MAC.init();
@@ -293,6 +287,15 @@ printf(CONTIKI_VERSION_STRING " started. ");
 
 	process_start(&tcpip_process, NULL);
 
+
+	/*shortaddr = (rimeaddr_node_addr.u8[0] << 8) +
+			rimeaddr_node_addr.u8[1];
+	memset(longaddr, 0, sizeof(longaddr));
+	rimeaddr_copy((rimeaddr_t *)&longaddr, &rimeaddr_node_addr);
+
+	printf("MAC %02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x \r\n",
+			longaddr[0], longaddr[1], longaddr[2], longaddr[3],
+			longaddr[4], longaddr[5], longaddr[6], longaddr[7]);*/
 	printf("Tentative link-local IPv6 address ");
 	{
 		uip_ds6_addr_t *lladdr;
@@ -396,7 +399,7 @@ printf(CONTIKI_VERSION_STRING " started. ");
 	 */
 	for(;;) {
 		do {
-			// Reset watchdog.
+	        // Reset watchdog.
         	watchdog_periodic();
 		} while(process_run() > 0);
 		

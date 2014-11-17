@@ -1,0 +1,16 @@
+Energy Micro AS grants anyone permission to use this Software and associated documentation files, free of charge.
+
+Redistribution is not permitted.
+
+DISCLAIMER OF WARRANTY/LIMITATION OF REMEDIES:
+Energy Micro AS has no obligation to support this Software.
+Energy Micro AS is providing the Software "AS IS", with no
+expressed or implied warranties of any kind, including, but not
+limited to, any implied warranties of merchantability or
+fitness for any particular purpose or warranties against infringement
+of any proprietary rights of a third party.
+
+Energy Micro AS will not be liable for any consequential, incidental,
+or special damages, or any other relief, or for any claim by any
+third party, arising from your use of this Software.
+

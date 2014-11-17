@@ -41,6 +41,8 @@
 #include "net/uip.h"
 #include "net/uip-ds6.h"
 #include "dev/slip.h"
+#include "net/netstack.h"
+#include "contiki-net.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -58,7 +60,13 @@ static uip_ipaddr_t last_sender;
 static void
 slip_input_callback(void)
 {
-   gpio_set_value(GPIO_USER_LED2, !gpio_get_value(GPIO_USER_LED2));
+/*int j;
+   PRINTF("SIN: %u \n ", uip_len);
+	for (j=0; j<uip_len; j++) {
+        	PRINTF("%x ", uip_buf[j]);
+      }
+
+   gpio_set_value(GPIO_USER_LED2, !gpio_get_value(GPIO_USER_LED2));*/
   if(uip_buf[0] == '!') {
     PRINTF("Got configuration message of type %c\n", uip_buf[1]);
     uip_len = 0;
@@ -70,9 +78,8 @@ slip_input_callback(void)
       PRINTF("Setting prefix ");
       PRINT6ADDR(&prefix);
       PRINTF("\n");
-      set_prefix_64(&prefix);
-      
-    }
+	set_prefix_64(&prefix);
+         }
   } else if (uip_buf[0] == '?') {
     PRINTF("Got request message of type %c\n", uip_buf[1]);
     if(uip_buf[1] == 'M') {
@@ -116,7 +123,7 @@ output(void)
     PRINT6ADDR(&UIP_IP_BUF->destipaddr);
     PRINTF("\n");
   } else {
- //   PRINTF("SUT: %u\n", uip_len);
+    //PRINTF("SUT: %u\n", uip_len);
     slip_send();
   }
 }

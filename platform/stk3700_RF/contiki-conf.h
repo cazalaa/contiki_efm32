@@ -4,6 +4,10 @@
  * \author
  *         Jerome Cloute-Cazalaa <Silabs>
  */
+
+
+
+
  
 #ifndef CONTIKI_CONF_H
 #define CONTIKI_CONF_H
@@ -39,22 +43,24 @@ void clock_delay_msec(uint16_t dt);
 
 // Manchester encoded packets can use 128*2 sized packets
 // Took into account in RF driver (use PACKETBUF_SIZE * 2)
-//#define PACKETBUF_CONF_SIZE 256
+#define PACKETBUF_CONF_SIZE 128
 
 /* NETSTACK_CONF_NETWORK specifies the network layer and can be either
    sicslowpan_driver, for IPv6 networking, or rime_driver, for the
    custom Rime network stack. */
-#ifndef NETSTACK_CONF_NETWORK
-//#define NETSTACK_CONF_NETWORK rime_driver
-#define NETSTACK_CONF_NETWORK sicslowpan_driver 
-#endif /* NETSTACK_CONF_NETWORK */
+/* Network Stack */
+#if UIP_CONF_IPV6
+#define NETSTACK_CONF_NETWORK sicslowpan_driver
+#else
+#define NETSTACK_CONF_NETWORK rime_driver
+#endif
 
 /* NETSTACK_CONF_MAC specifies the Medium Access Control (MAC)
    layer. The nullmac_driver does not provide any MAC
    functionality. The csma_driver is the default CSMA MAC layer, but
    is not compatible with all radios. */
 #ifndef NETSTACK_CONF_MAC
-#define NETSTACK_CONF_MAC   nullmac_driver
+#define NETSTACK_CONF_MAC  nullmac_driver
 //#define NETSTACK_CONF_MAC   csma_driver 
 #endif /* NETSTACK_CONF_MAC */
 
@@ -87,9 +93,9 @@ void clock_delay_msec(uint16_t dt);
 
 /* UIP_CONF_IPV6 specifies whether or not IPv6 should be used. If IPv6
    is not used, IPv4 is used instead. */
-#ifndef UIP_CONF_IPV6
+/*#ifndef UIP_CONF_IPV6
 #define UIP_CONF_IPV6 1
-#endif /* UIP_CONF_IPV6 */
+#endif *//* UIP_CONF_IPV6 */
 
 /* CONTIKIMAC_CONF_WITH_PHASE_OPTIMIZATION specifies if ContikiMAC
    should optimize for the phase of neighbors. The phase optimization
@@ -115,8 +121,7 @@ void clock_delay_msec(uint16_t dt);
 
 // 
 #if WITH_UIP6
-/* Network setup for IPv6 */
-#define NETSTACK_CONF_NETWORK sicslowpan_driver
+
 
 /* Specify a minimum packet size for 6lowpan compression to be
    enabled. This is needed for ContikiMAC, which needs packets to be
@@ -159,12 +164,6 @@ void clock_delay_msec(uint16_t dt);
 #define TIMESYNCH_CONF_ENABLED           0
 #endif /* TIMESYNCH_CONF_ENABLED */
 
-// #if TIMESYNCH_CONF_ENABLED
-// /* CC2520 SDF timestamps must be on if timesynch is enabled. */
-// #undef CC2520_CONF_SFD_TIMESTAMPS
-// #define CC2520_CONF_SFD_TIMESTAMPS       1
-// #endif /* TIMESYNCH_CONF_ENABLED */
-
 #endif /* WITH_UIP6 */
 
 // 
@@ -175,7 +174,7 @@ void clock_delay_msec(uint16_t dt);
 #endif /* RF_CHANNEL */
 
 // 
- #define CONTIKIMAC_CONF_BROADCAST_RATE_LIMIT 0
+#define CONTIKIMAC_CONF_BROADCAST_RATE_LIMIT 0
  
 
 #define IEEE802154_CONF_PANID       0xABCD
@@ -207,7 +206,7 @@ void clock_delay_msec(uint16_t dt);
 #define PROCESS_CONF_FASTPOLL    4
 
 
-// #ifdef WITH_UIP6
+#ifdef WITH_UIP6
 // 
 #define RIMEADDR_CONF_SIZE              8
 
@@ -263,12 +262,12 @@ void clock_delay_msec(uint16_t dt);
 #ifndef SICSLOWPAN_CONF_MAX_MAC_TRANSMISSIONS
 #define SICSLOWPAN_CONF_MAX_MAC_TRANSMISSIONS   5
 #endif /* SICSLOWPAN_CONF_MAX_MAC_TRANSMISSIONS */  
-// #else /* WITH_UIP6 */
-//  #define UIP_CONF_IP_FORWARD      1
+#else /* WITH_UIP6 */
+#define UIP_CONF_IP_FORWARD      1
 // 
-//  #define UIP_CONF_BUFFER_SIZE     1000  
+#define UIP_CONF_BUFFER_SIZE     1000  
 
- //#endif /* WITH_UIP6 */  
+#endif /* WITH_UIP6 */  
 // 
 #define UIP_CONF_ICMP_DEST_UNREACH 1
 
